@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NODPIX | เข้าสู่ระบบ</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=Noto+Sans+Thai:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Lato', 'Noto Sans Thai', sans-serif; }
+    </style>
+</head>
+<body class="bg-[#121212] text-zinc-100 antialiased min-h-screen flex flex-col justify-between p-4 relative overflow-x-hidden">
+
+    <!-- Background Glow Effect -->
+    <div class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-orange-500/10 rounded-full blur-[120px] pointer-events-none"></div>
+
+    <!-- Header / Brand -->
+    <header class="w-full max-w-md mx-auto pt-4 flex justify-between items-center z-10">
+        <a href="index.html" class="text-xl font-black tracking-tight text-white hover:opacity-90 transition-all flex items-center gap-1">
+            NODPIX
+        </a>
+        <a href="index.html" class="text-xs text-zinc-400 hover:text-white transition-all flex items-center gap-1">
+            ✕ ปิด
+        </a>
+    </header>
+
+    <!-- Main Login Card -->
+    <main class="w-full max-w-md mx-auto my-auto bg-[#191919]/80 backdrop-blur-md rounded-3xl p-8 border border-white/10 shadow-2xl relative z-10 space-y-6">
+        <div class="text-center space-y-1">
+            <h1 class="text-2xl font-black tracking-tight text-white">SIGN IN</h1>
+            <p class="text-xs text-zinc-400">เข้าสู่ระบบเพื่อจัดการผลงานและไอเดียของคุณ</p>
+        </div>
+
+        <form id="form-login" class="space-y-4 text-left">
+            <div class="space-y-1">
+                <label for="login-email" class="text-[11px] font-bold text-zinc-400 uppercase tracking-wide">อีเมล (EMAIL)</label>
+                <input type="email" id="login-email" placeholder="example@nodpix.com" class="w-full bg-white/5 text-zinc-100 text-xs px-4 py-3 rounded-xl border border-white/10 focus:outline-none focus:bg-white/10 focus:border-orange-500 transition-all placeholder-zinc-500" required>
+            </div>
+            
+            <div class="space-y-1 relative">
+                <div class="flex justify-between items-center">
+                    <label for="login-password" class="text-[11px] font-bold text-zinc-400 uppercase tracking-wide">รหัสผ่าน (PASSWORD)</label>
+                    <button type="button" id="btn-forgot-password-trigger" class="text-[10px] text-orange-500 font-bold hover:underline focus:outline-none">ลืมรหัสผ่าน?</button>
+                </div>
+                <input type="password" id="login-password" placeholder="••••••••" class="w-full bg-white/5 text-zinc-100 text-xs px-4 py-3 rounded-xl border border-white/10 focus:outline-none focus:bg-white/10 focus:border-orange-500 transition-all placeholder-zinc-500" required>
+            </div>
+
+            <button type="submit" class="w-full py-3.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold shadow-lg shadow-orange-500/20 transition-all active:scale-[0.99] mt-2">
+                LOGIN / เข้าสู่ระบบ
+            </button>
+        </form>
+
+        <div class="relative flex py-1 items-center">
+            <div class="flex-grow border-t border-white/10"></div>
+            <span class="flex-shrink mx-4 text-[10px] text-zinc-500 font-bold uppercase tracking-widest">or connect with</span>
+            <div class="flex-grow border-t border-white/10"></div>
+        </div>
+
+        <button type="button" id="btn-google-login" class="w-full py-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-zinc-200 text-xs font-bold transition-all active:scale-[0.99] flex items-center justify-center space-x-2">
+            <svg class="w-4 h-4" viewBox="0 0 24 24">
+                <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.53-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-8.17z"/>
+                <path fill="#34A853" d="M12 24c3.24 0 5.97-1.08 7.96-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.08 1.16-3.15 0-5.81-2.13-6.76-5.01H1.31v3.15C3.29 21.24 7.39 24 12 24z"/>
+                <path fill="#FBBC05" d="M5.24 14.19c-.24-.72-.38-1.49-.38-2.29s.14-1.57.38-2.29V6.46H1.31C.48 8.12 0 9.97 0 12s.48 3.88 1.31 5.54l3.93-3.35z"/>
+                <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.22 0 12 0 7.39 0 3.29 2.76 1.31 6.46l3.93 3.35c.95-2.88 3.61-5.01 6.76-5.01z"/>
+            </svg>
+            <span>Sign in with Google</span>
+        </button>
+
+        <p class="text-[11px] text-zinc-400 font-medium text-center">ยังไม่เป็นสมาชิกใช่ไหม? <a href="register.html" class="text-orange-500 font-bold hover:underline">สมัครสมาชิกที่นี่</a></p>
+    </main>
+
+    <footer class="w-full text-center py-4 text-[11px] text-zinc-600">
+        &copy; NODPIX Community. All rights reserved.
+    </footer>
+
+    <!-- Forgot Password Modal -->
+    <div id="modal-forgot-password" class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 hidden z-50">
+        <div class="bg-[#191919] rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-white/10 text-center space-y-4">
+            <div>
+                <h3 class="text-base font-bold text-white">🔒 กู้คืนรหัสผ่าน</h3>
+                <p class="text-[11px] text-zinc-400 mt-1">ระบบจะส่งลิงก์เพื่อตั้งรหัสผ่านใหม่ไปให้ที่อีเมลของคุณ</p>
+            </div>
+            <form id="form-forgot-password" class="space-y-3 text-left">
+                <div class="space-y-1">
+                    <label for="forgot-email" class="text-[10px] font-bold text-zinc-400 uppercase tracking-wide">กรอกอีเมลของคุณ (EMAIL)</label>
+                    <input type="email" id="forgot-email" placeholder="example@nodpix.com" class="w-full bg-white/5 text-zinc-100 text-xs px-4 py-2.5 rounded-xl border border-white/10 focus:outline-none focus:border-orange-500 transition-all placeholder-zinc-500" required>
+                </div>
+                <div class="flex space-x-2 pt-1">
+                    <button type="button" id="btn-forgot-password-close" class="flex-1 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-zinc-300 text-xs font-bold transition-all">
+                        ยกเลิก
+                    </button>
+                    <button type="submit" class="flex-1 py-2.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold transition-all active:scale-[0.98]">
+                        ส่งลิงก์กู้คืน
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script type="module" src="./js/login.js"></script>
+</body>
+</html>

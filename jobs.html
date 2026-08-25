@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NODPIX | Jobs & Messenger</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Noto+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', 'Noto Sans Thai', sans-serif; }
+        .custom-scrollbar::-webkit-scrollbar { width: 5px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f8fafc; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        /* Smooth Toast Animations */
+        @keyframes toastIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        @keyframes toastOut {
+            from {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+            to {
+                opacity: 0;
+                transform: translateY(-10px) scale(0.95);
+            }
+        }
+
+        @keyframes progressBar {
+            from { width: 100%; }
+            to { width: 0%; }
+        }
+
+        .animate-toast-in {
+            animation: toastIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        .animate-toast-out {
+            animation: toastOut 0.25s cubic-bezier(0.7, 0, 0.84, 0) forwards;
+        }
+
+        .animate-progress {
+            animation: progressBar linear forwards;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900 antialiased h-screen flex flex-col overflow-hidden">
+
+    <!-- 🔔 Toast Notification Container -->
+    <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2.5 max-w-sm w-full pointer-events-none px-4 sm:px-0" aria-live="polite"></div>
+
+    <!-- 🚀 Top Navbar Header -->
+    <header class="bg-white text-slate-900 sticky top-0 z-30 px-4 sm:px-6 py-3 flex items-center justify-between border-b border-slate-200 text-xs sm:text-sm font-semibold shrink-0 shadow-xs">
+        
+        <!-- ฝั่งซ้าย: โลโก้ & เมนูหลัก -->
+        <div class="flex items-center space-x-6">
+            <a href="index.html" class="text-base sm:text-lg font-black tracking-tight text-slate-900 hover:opacity-90 transition-all flex items-center gap-1">
+                NODPIX
+            </a>
+
+            <nav class="hidden md:flex items-center space-x-5 text-slate-600">
+                <a href="index.html" class="hover:text-slate-900 transition-all">Explore</a>
+                <a href="jobs.html" class="text-slate-900 font-bold transition-all border-b-2 border-orange-500 pb-0.5">Jobs</a>
+                <a href="create-work.html" class="hover:text-slate-900 transition-all flex items-center gap-1 text-orange-500 font-bold">
+                    <span>+ Create Work</span>
+                </a>
+            </nav>
+        </div>
+
+        <!-- ฝั่งขวา: ปุ่ม New Job, ไอคอนจดหมาย & โปรไฟล์ Dropdown -->
+        <div class="flex items-center space-x-3 sm:space-x-5">
+            
+            <button type="button" id="btnPostJob" class="bg-orange-500 hover:bg-orange-600 text-white font-bold px-4 py-2 rounded-full transition-all flex items-center gap-1.5 shadow-md shadow-orange-500/20 active:scale-95 cursor-pointer text-xs">
+                <i class="fa-solid fa-plus text-xs"></i>
+                <span>New Job</span>
+            </button>
+
+            <div id="auth-guest" class="flex items-center gap-2">
+                <a href="login.html" class="px-3 py-1.5 text-xs font-bold text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-full transition-all">Sign In</a>
+            </div>
+
+            <div id="auth-user" class="hidden items-center gap-3 sm:gap-4">
+                <button type="button" id="btnOpenMessenger" aria-label="Open Messenger" class="relative text-slate-600 hover:text-slate-900 p-1.5 transition-all focus:outline-none flex items-center justify-center">
+                    <i class="fa-regular fa-envelope text-xl"></i>
+                    <span id="unreadBadge" class="hidden absolute -top-1 -right-1.5 bg-rose-500 text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center border-2 border-white">0</span>
+                </button>
+
+                <div class="relative py-1">
+                    <button type="button" id="btn-toggle-dropdown" aria-expanded="false" aria-label="User Menu" class="w-9 h-9 rounded-full overflow-hidden border border-slate-200 cursor-pointer bg-slate-100 flex items-center justify-center shrink-0 focus:outline-none hover:border-slate-300">
+                        <img id="header-avatar" 
+                             src="https://api.dicebear.com/7.x/avataaars/svg?seed=User" 
+                             alt="User Profile Picture" 
+                             class="w-full h-full object-cover">
+                    </button>
+
+                    <div id="user-dropdown-menu" class="hidden absolute right-0 top-full pt-2 w-64 z-50">
+                        <div class="bg-white rounded-2xl shadow-2xl border border-slate-100 overflow-hidden text-slate-800 relative">
+                            <div class="w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-b-[6px] border-b-white absolute top-[-6px] right-3.5"></div>
+                            
+                            <div class="max-h-[85vh] overflow-y-auto p-4 space-y-3.5 text-xs font-semibold select-none">
+                                <div class="flex flex-col items-center text-center pb-3 border-b border-slate-100">
+                                    <img id="dropdown-avatar" src="https://api.dicebear.com/7.x/avataaars/svg?seed=User" alt="User Profile Picture" class="w-14 h-14 rounded-full object-cover mb-2 border-2 border-slate-100">
+                                    <h3 id="user-display-name" class="text-sm font-bold text-slate-900 truncate max-w-full">---</h3>
+                                    <p id="dropdown-user-email" class="text-[11px] text-slate-400 font-normal truncate max-w-full">---</p>
+                                </div>
+
+                                <ul class="space-y-2.5 pt-1 text-slate-700">
+                                    <li>
+                                        <a href="create-work.html" class="flex items-center gap-2 text-orange-600 font-bold hover:underline">
+                                            <i class="fa-solid fa-plus text-xs"></i>
+                                            สร้างผลงานใหม่
+                                        </a>
+                                    </li>
+                                    <li><a href="profile.html" class="block hover:text-orange-600">Profile</a></li>
+                                    <li><a href="#" class="block hover:text-orange-600">Settings</a></li>
+                                </ul>
+
+                                <hr class="border-slate-100">
+
+                                <button id="btnLogout" type="button" class="w-full text-left text-rose-500 font-bold hover:underline pt-0.5 cursor-pointer">
+                                    Sign Out
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </header>
+
+    <!-- Filter Bar -->
+    <div class="h-14 border-b border-slate-200 px-6 flex items-center justify-between shrink-0 bg-white overflow-x-auto custom-scrollbar">
+        <div class="flex items-center space-x-2">
+            <button id="btnFilterAll" type="button" class="px-4 py-1.5 bg-slate-900 text-white rounded-full text-xs font-bold transition-all cursor-pointer whitespace-nowrap">All Jobs</button>
+            <button id="btnFilterFreelance" type="button" class="px-4 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-full text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer whitespace-nowrap">
+                <i class="fa-solid fa-briefcase text-[10px]"></i> Freelance
+            </button>
+            <button id="btnFilterFulltime" type="button" class="px-4 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-full text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer whitespace-nowrap">
+                <i class="fa-solid fa-building text-[10px]"></i> Full-Time
+            </button>
+            <button id="btnFilterSaved" type="button" class="px-4 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-full text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer whitespace-nowrap">
+                <i class="fa-solid fa-star text-amber-400 text-[10px]"></i> Save Job
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Layout -->
+    <div class="flex-1 flex overflow-hidden relative">
+        
+        <!-- ฝั่งซ้าย: รายการงาน -->
+        <aside class="w-full lg:w-[400px] xl:w-[440px] border-r border-slate-200 flex flex-col shrink-0 bg-slate-50/50">
+            <div class="px-5 py-3 border-b border-slate-200 text-xs font-bold text-slate-400 bg-white">
+                <span id="job-count">0 jobs</span>
+            </div>
+
+            <div id="jobs-list" class="flex-1 overflow-y-auto custom-scrollbar p-3 space-y-3">
+                <div class="p-6 text-center text-slate-400 text-xs font-semibold">กำลังโหลดประกาศงาน...</div>
+            </div>
+
+            <!-- ข้อเสนอราคาของฉัน -->
+            <div class="border-t border-slate-200 bg-white p-4 max-h-48 overflow-y-auto custom-scrollbar">
+                <h4 class="text-xs font-bold text-slate-700 mb-2 flex items-center gap-1.5">
+                    <i class="fa-solid fa-paper-plane text-orange-500"></i> ข้อเสนอราคาของฉัน (My Proposals)
+                </h4>
+                <div id="my-proposals-list" class="space-y-2">
+                    <p class="text-xs text-slate-400 font-medium">กำลังโหลดสถานะข้อเสนอ...</p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- ฝั่งขวา: รายรายละเอียดงาน -->
+        <main id="job-detail-container" class="hidden lg:flex flex-1 bg-white overflow-y-auto custom-scrollbar p-6 lg:p-10 justify-center">
+            
+            <!-- Default Prompt (กรณียังไม่ได้เลือกงาน) -->
+            <div id="default-prompt" class="max-w-md w-full text-center space-y-6 my-auto">
+                <div>
+                    <h2 class="text-2xl font-black text-slate-900">Find your next creative job</h2>
+                    <p class="text-xs text-slate-500 font-semibold mt-1">คลิกเลือกรายการงานทางซ้ายเพื่อดูรายละเอียด</p>
+                </div>
+                <div class="p-6 bg-slate-50 rounded-2xl border border-slate-200 shadow-xs text-xs text-slate-600">
+                    <i class="fa-regular fa-clipboard text-3xl text-orange-500 mb-3 block"></i>
+                    เลือกลิสต์รายการงานฝั่งซ้ายมือเพื่อแสดงรายละเอียดงาน ข้อมูลผู้ว่าจ้าง และงบประมาณ
+                </div>
+            </div>
+
+            <!-- Active Job Detail View -->
+            <div id="active-job-view" class="hidden w-full max-w-5xl space-y-8">
+                
+                <!-- Header Section -->
+                <div class="flex items-start gap-4 pb-6 border-b border-slate-100">
+                    <div class="relative shrink-0">
+                        <img id="view-hiring-avatar" 
+                             src="https://api.dicebear.com/7.x/identicon/svg?seed=Employer" 
+                             alt="Employer Logo" 
+                             class="w-16 h-16 rounded-2xl object-cover border border-slate-200 shadow-xs">
+                    </div>
+
+                    <div class="space-y-1">
+                        <h1 id="view-job-title" class="text-2xl lg:text-3xl font-extrabold text-slate-900 tracking-tight">Graphic Designer (E-commerce)</h1>
+                        
+                        <div class="flex items-center flex-wrap gap-2 text-xs font-semibold text-slate-500">
+                            <span id="view-job-company" class="text-slate-800 font-bold">Exchange Life</span>
+                            <i class="fa-solid fa-circle-check text-orange-500 text-[11px]" title="Verified Employer"></i>
+                            <a href="#" aria-label="Company link" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i></a>
+                            <span class="text-slate-300">•</span>
+                            <span id="view-job-location">Anywhere</span>
+                            <span class="text-slate-300">•</span>
+                            <span id="view-job-badge" class="font-medium text-slate-600">Remote</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Bar -->
+                <div class="flex flex-wrap items-center justify-between gap-4 pb-6 border-b border-slate-100">
+                    <div class="flex items-center gap-3">
+                        <button id="btnApplyJob" type="button" class="bg-orange-500 hover:bg-orange-600 text-white font-extrabold text-xs px-6 py-2.5 rounded-full transition-all shadow-md hover:shadow-lg cursor-pointer">
+                            ยื่นใบเสนอราคา
+                        </button>
+
+                        <button type="button" class="border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-bold px-4 py-2.5 rounded-full transition-all flex items-center gap-1.5 cursor-pointer">
+                            <i class="fa-regular fa-star text-amber-400"></i>
+                            <span>Save Job</span>
+                        </button>
+                    </div>
+
+                    <div class="flex items-center gap-3">
+                        <span id="view-job-budget" class="text-xl sm:text-2xl font-black text-orange-500 tracking-tight">฿1,200</span>
+                    </div>
+                </div>
+
+                <!-- Content Layout -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+                    
+                    <div class="lg:col-span-2 space-y-6 text-slate-700 text-xs sm:text-sm leading-relaxed">
+                        <div class="space-y-3 pt-2">
+                            <h4 id="view-job-about-heading" class="font-extrabold text-slate-900 text-sm">เกี่ยวกับนายจ้างและรายละเอียดงาน</h4>
+                            <div id="view-job-desc" class="whitespace-pre-line text-slate-600 font-normal">
+                                รายละเอียดงานจะแสดงที่นี่...
+                            </div>
+                        </div>
+
+                        <!-- รายการผู้ยื่นเสนอราคา -->
+                        <div class="pt-6 border-t border-slate-100 space-y-3">
+                            <h4 class="font-extrabold text-slate-900 text-sm">รายการเสนอราคา</h4>
+                            <div id="proposals-container" class="space-y-2">
+                                <p class="text-xs text-slate-400 font-medium">ไม่มีรายการเสนอราคา</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sidebar Details -->
+                    <div class="bg-slate-50/70 border border-slate-200/80 rounded-2xl p-5 space-y-5 text-xs">
+                        
+                        <div>
+                            <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider block mb-1">JOB TYPE</span>
+                            <span id="sidebar-job-type" class="font-bold text-slate-900 text-xs">Full-Time</span>
+                        </div>
+
+                        <div>
+                            <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider block mb-1">JOB LOCATION</span>
+                            <span id="sidebar-job-location" class="font-bold text-slate-900 text-xs">Anywhere</span>
+                        </div>
+
+                        <div>
+                            <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider block mb-1.5">HIRING CONTACT</span>
+                            <div class="flex items-center gap-2">
+                                <img id="sidebar-hiring-avatar" src="https://api.dicebear.com/7.x/identicon/svg?seed=Employer" alt="Hiring Manager Avatar" class="w-5 h-5 rounded-md object-cover">
+                                <span id="sidebar-hiring-name" class="font-bold text-slate-900">Exchange Life</span>
+                            </div>
+                        </div>
+
+                        <div>
+                            <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider block mb-1">DATE POSTED</span>
+                            <span id="view-job-date" class="font-bold text-slate-900 text-xs">25 สิงหาคม 2026</span>
+                        </div>
+
+                        <div>
+                            <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider block mb-2">CREATIVE FIELDS</span>
+                            <div id="sidebar-creative-fields" class="flex flex-wrap gap-1.5">
+                                <span class="px-2.5 py-1 bg-white border border-slate-200 text-slate-700 rounded-lg text-[11px] font-semibold">Graphic Design</span>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </main>
+
+        <!-- Messenger Drawer -->
+        <aside id="messengerDrawer" class="hidden absolute right-0 top-0 bottom-0 w-80 md:w-96 bg-white border-l border-slate-200 shadow-2xl z-40 flex flex-col">
+            <div class="p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-comments text-orange-500"></i>
+                    <h3 class="font-extrabold text-sm text-slate-900">ข้อความแจ้งเตือน (Messenger)</h3>
+                </div>
+                <button id="btnCloseMessenger" type="button" aria-label="Close Messenger" class="text-slate-400 hover:text-slate-600 text-xs font-bold cursor-pointer">✕ Close</button>
+            </div>
+
+            <div id="messagesList" class="flex-1 overflow-y-auto custom-scrollbar divide-y divide-slate-100 p-2">
+                <div class="p-6 text-center text-slate-400 text-xs font-semibold">ไม่มีข้อความใหม่</div>
+            </div>
+        </aside>
+
+    </div>
+
+    <!-- Modal Post & Edit Job -->
+    <div id="modalPostJob" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4 hidden z-50">
+        <div class="bg-white rounded-[32px] max-w-[540px] w-full p-8 shadow-2xl relative space-y-6 max-h-[90vh] overflow-y-auto custom-scrollbar">
+            
+            <button id="btnCloseModal" type="button" aria-label="Close Modal" class="absolute top-6 right-6 w-9 h-9 bg-slate-100 hover:bg-slate-200 text-slate-500 rounded-full flex items-center justify-center font-bold text-sm transition-all cursor-pointer">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <div class="space-y-1">
+                <h3 class="text-2xl font-black text-[#0F172A] tracking-tight">Post a Job</h3>
+                <p class="text-xs text-slate-400 font-bold">สร้างหรือแก้ไขประกาศงานเพื่อหาครีเอเตอร์ร่วมงาน</p>
+            </div>
+
+            <form id="formPostJob" class="space-y-4 text-xs font-bold text-slate-700">
+                <div class="space-y-1.5">
+                    <label for="jobTitle" class="block text-slate-700">Job Title</label>
+                    <input type="text" id="jobTitle" placeholder="เช่น UI/UX Designer..." class="w-full bg-[#F8FAFC] border border-slate-200/60 rounded-xl px-4 py-3 text-slate-800 placeholder-slate-400 focus:outline-none focus:border-orange-500 focus:bg-white transition-all" required>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="space-y-1.5">
+                        <label for="jobBudget" class="block text-slate-700">Budget (THB)</label>
+                        <input type="text" id="jobBudget" placeholder="25000" class="w-full bg-[#F8FAFC] border border-slate-200/60 rounded-xl px-4 py-3 text-slate-800 placeholder-slate-400 focus:outline-none focus:border-orange-500 focus:bg-white transition-all" required>
+                    </div>
+                    <div class="space-y-1.5">
+                        <label for="jobType" class="block text-slate-700">Job Type</label>
+                        <div class="relative">
+                            <select id="jobType" class="w-full bg-[#F8FAFC] border border-slate-200/60 rounded-xl px-4 py-3 text-slate-800 appearance-none focus:outline-none focus:border-orange-500 focus:bg-white transition-all cursor-pointer">
+                                <option value="Freelance">Freelance</option>
+                                <option value="Full-Time">Full-Time</option>
+                            </select>
+                            <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="space-y-1.5">
+                        <label for="jobLocation" class="block text-slate-700">Location</label>
+                        <input type="text" id="jobLocation" placeholder="เช่น Remote หรือ Bangkok" class="w-full bg-[#F8FAFC] border border-slate-200/60 rounded-xl px-4 py-3 text-slate-800 placeholder-slate-400 focus:outline-none focus:border-orange-500 focus:bg-white transition-all" required>
+                    </div>
+                    <div class="space-y-1.5">
+                        <label for="jobCategory" class="block text-slate-700">Category</label>
+                        <div class="relative">
+                            <select id="jobCategory" class="w-full bg-[#F8FAFC] border border-slate-200/60 rounded-xl px-4 py-3 text-slate-800 appearance-none focus:outline-none focus:border-orange-500 focus:bg-white transition-all cursor-pointer">
+                                <option value="Graphic Design">Graphic Design</option>
+                                <option value="Branding & Logo">Branding & Logo</option>
+                                <option value="UI/UX Design">UI/UX Design</option>
+                                <option value="Illustration">Illustration</option>
+                                <option value="Packaging Design">Packaging Design</option>
+                            </select>
+                            <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="space-y-1.5">
+                    <label for="jobImageUrl" class="block text-slate-700">Attachment Image URL (Google Drive or Direct Image Link)</label>
+                    <input type="url" id="jobImageUrl" placeholder="https://drive.google.com/file/d/..." class="w-full bg-[#F8FAFC] border border-slate-200/60 rounded-xl px-4 py-3 text-slate-800 placeholder-slate-400 focus:outline-none focus:border-orange-500 focus:bg-white transition-all">
+                </div>
+
+                <div class="space-y-1.5">
+                    <label for="jobDesc" class="block text-slate-700">Description</label>
+                    <textarea id="jobDesc" rows="4" placeholder="รายละเอียดของงาน..." class="w-full bg-[#F8FAFC] border border-slate-200/60 rounded-xl p-4 text-slate-800 placeholder-slate-400 focus:outline-none focus:border-orange-500 focus:bg-white transition-all resize-y" required></textarea>
+                </div>
+
+                <div class="pt-2">
+                    <button type="submit" class="w-full bg-[#FF6B11] hover:bg-orange-600 active:scale-[0.99] text-white font-extrabold py-3.5 rounded-full transition-all text-sm shadow-md shadow-orange-500/20 cursor-pointer">
+                        Publish Job
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Apply / Submit Proposal -->
+    <div id="modalApplyJob" class="fixed inset-0 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4 hidden z-50">
+        <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl relative space-y-5">
+            <button id="btnCloseApplyModal" type="button" aria-label="Close Apply Modal" class="absolute top-4 right-4 w-8 h-8 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-full flex items-center justify-center font-bold text-xs cursor-pointer">✕</button>
+
+            <div>
+                <h2 class="text-lg font-black text-slate-900">ยื่นใบเสนอราคา (Submit Proposal)</h2>
+                <p id="applyModalJobTitle" class="text-xs text-orange-500 font-bold mt-1">---</p>
+            </div>
+
+            <form id="formApplyJob" class="space-y-3 text-xs font-semibold">
+                <div>
+                    <label for="proposalPrice" class="block text-slate-700 mb-1">ราคาที่เสนอ (บาท / THB)</label>
+                    <input type="text" id="proposalPrice" placeholder="ระบุจำนวนเงินบาท เช่น 15000" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-slate-800 focus:outline-none focus:border-orange-500" required>
+                </div>
+                <div>
+                    <label for="proposalDays" class="block text-slate-700 mb-1">ระยะเวลาทำงาน (วัน)</label>
+                    <input type="number" id="proposalDays" placeholder="เช่น 7" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-slate-800 focus:outline-none focus:border-orange-500" required>
+                </div>
+                <div>
+                    <label for="proposalCoverLetter" class="block text-slate-700 mb-1">ข้อความถึงผู้ว่าจ้าง / ประสบการณ์ (Cover Letter)</label>
+                    <textarea id="proposalCoverLetter" rows="4" placeholder="แนะนำตัว แนบลิงก์ผลงาน หรือรายละเอียดข้อเสนอ..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-slate-800 focus:outline-none focus:border-orange-500" required></textarea>
+                </div>
+                <button type="submit" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 rounded-full transition-all text-xs shadow-sm cursor-pointer">
+                    ส่งใบเสนอราคา
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Script ควบคุม Profile Dropdown -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const btnToggle = document.getElementById('btn-toggle-dropdown');
+            const dropdownMenu = document.getElementById('user-dropdown-menu');
+
+            if (btnToggle && dropdownMenu) {
+                btnToggle.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const isExpanded = btnToggle.getAttribute('aria-expanded') === 'true';
+                    btnToggle.setAttribute('aria-expanded', !isExpanded);
+                    dropdownMenu.classList.toggle('hidden');
+                });
+
+                document.addEventListener('click', (e) => {
+                    if (!dropdownMenu.contains(e.target) && !btnToggle.contains(e.target)) {
+                        dropdownMenu.classList.add('hidden');
+                        btnToggle.setAttribute('aria-expanded', 'false');
+                    }
+                });
+            }
+        });
+    </script>
+
+    <script type="module" src="./js/job.js"></script>
+</body>
+</html>

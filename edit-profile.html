@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NODPIX | Edit Profile</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=Noto+Sans+Thai:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS & Cropper.js CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" />
+
+    <style>
+        body { font-family: 'Lato', 'Noto Sans Thai', sans-serif; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="bg-[#f9f9f9] text-slate-800 antialiased min-h-screen flex flex-col">
+
+    <!-- Header -->
+    <header class="bg-[#191919]/80 backdrop-blur-md text-white sticky top-0 z-50 px-4 sm:px-6 py-2.5 flex items-center justify-between border-b border-white/10 text-xs sm:text-sm font-semibold transition-all">
+        <div class="flex items-center space-x-4 sm:space-x-6">
+            <a href="index.html" class="text-base sm:text-lg font-black tracking-tight text-white hover:opacity-90 transition-all flex items-center gap-1">
+                NODPIX
+            </a>
+
+            <nav class="hidden lg:flex items-center space-x-5 text-zinc-300">
+                <a href="index.html" class="hover:text-white transition-all">Explore</a>
+                <a href="jobs.html" class="hover:text-white transition-all">Jobs</a>
+                <a href="create-work.html" class="hover:text-white transition-all flex items-center gap-1 text-orange-500 font-bold">
+                    <span>+ Create Work</span>
+                </a>
+            </nav>
+        </div>
+
+        <div class="flex items-center space-x-3 sm:space-x-4">
+            <a id="btn-back-to-profile" href="profile.html" class="bg-orange-500 hover:bg-orange-600 text-white font-bold px-4 py-1.5 rounded-full text-xs transition-all flex items-center gap-1.5 shadow-md shadow-orange-500/20 active:scale-95">
+                <span>← Back to Profile</span>
+            </a>
+
+            <div class="w-8 h-8 rounded-full overflow-hidden border border-white/20 bg-zinc-800 flex items-center justify-center shrink-0 relative">
+                <img id="nav-avatar-img" src="" class="w-full h-full object-cover hidden" referrerpolicy="no-referrer">
+                <div id="nav-avatar-placeholder" class="w-full h-full flex items-center justify-center font-bold text-xs text-zinc-300">U</div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="max-w-[1200px] mx-auto w-full px-4 sm:px-6 py-8 flex-grow">
+        
+        <div class="flex flex-col md:flex-row gap-8 items-start">
+
+            <!-- Sidebar Navigation -->
+            <aside class="w-full md:w-64 bg-white rounded-2xl p-3 shadow-xs border border-slate-100 space-y-1 shrink-0">
+                <div class="px-3 py-2 text-[11px] font-black text-slate-400 uppercase tracking-wider">Account Settings</div>
+                <button type="button" id="tab-basic" class="tab-btn w-full text-left flex items-center px-4 py-2.5 text-xs font-bold text-orange-600 bg-orange-50 border-l-4 border-orange-500 rounded-r-xl transition-all">
+                    Basic Information
+                </button>
+                <button type="button" id="tab-social" class="tab-btn w-full text-left block px-4 py-2.5 text-xs font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900 rounded-xl transition-all">
+                    Social Links
+                </button>
+            </aside>
+
+            <!-- Form Section -->
+            <section class="flex-1 w-full bg-white rounded-3xl p-6 sm:p-8 shadow-xs border border-slate-100">
+                
+                <form id="edit-profile-form" class="space-y-6">
+                    
+                    <!-- SECTION 1: BASIC INFORMATION -->
+                    <div id="section-basic-info" class="space-y-6">
+                        <div class="pb-6 mb-6 border-b border-slate-100">
+                            <h1 class="text-xl font-extrabold text-slate-900 tracking-tight">Basic Information</h1>
+                            <p class="text-xs text-slate-400 mt-1">อัปเดตข้อมูลส่วนตัวและรูปโปรไฟล์ของคุณที่จะแสดงบนแพลตฟอร์ม</p>
+                        </div>
+
+                        <!-- Avatar Upload Section -->
+                        <div class="flex flex-col sm:flex-row items-center sm:items-start gap-6 p-4 rounded-2xl bg-slate-50 border border-slate-100/80">
+                            <div class="relative group">
+                                <div class="w-28 h-28 rounded-full overflow-hidden bg-slate-200 border-4 border-white shadow-md flex items-center justify-center relative">
+                                    <img id="profile-avatar-img" src="" class="w-full h-full object-cover hidden" referrerpolicy="no-referrer">
+                                    <span id="profile-avatar-placeholder" class="text-3xl font-black text-slate-400 uppercase">U</span>
+                                </div>
+                            </div>
+
+                            <div class="flex flex-col items-center sm:items-start justify-center space-y-2 py-1">
+                                <h3 class="text-xs font-bold text-slate-800">Profile Picture</h3>
+                                <p class="text-[11px] text-slate-400 text-center sm:text-left max-w-xs">รองรับไฟล์ JPG, PNG หรือ GIF (ขนาดไฟล์แนะนำไม่เกิน 1MB รูปทรงจัตุรัส)</p>
+                                
+                                <button type="button" id="btn-replace-avatar" class="mt-1 px-4 py-1.5 bg-white border border-slate-200 hover:border-orange-500 hover:text-orange-600 text-slate-700 text-xs font-bold rounded-full shadow-2xs transition-all flex items-center gap-1.5 active:scale-95">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                                    <span>Upload New Picture</span>
+                                </button>
+                                <input type="file" id="avatar-file-input" class="hidden" accept="image/*">
+                            </div>
+                        </div>
+
+                        <!-- Input Fields Grid (ลบส่วน UID ออกแล้ว) -->
+                        <div class="space-y-4">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-700 mb-1.5">First Name</label>
+                                    <input type="text" id="first-name" class="w-full bg-slate-50 border border-slate-200 focus:bg-white focus:border-orange-500 rounded-xl px-4 py-2.5 text-xs text-slate-800 transition-all focus:outline-none">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-700 mb-1.5">Last Name</label>
+                                    <input type="text" id="last-name" class="w-full bg-slate-50 border border-slate-200 focus:bg-white focus:border-orange-500 rounded-xl px-4 py-2.5 text-xs text-slate-800 transition-all focus:outline-none">
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1.5">Headline</label>
+                                <input type="text" id="headline" placeholder="Ex: Senior UI/UX Designer, Art Director, Student" class="w-full bg-slate-50 border border-slate-200 focus:bg-white focus:border-orange-500 rounded-xl px-4 py-2.5 text-xs text-slate-800 transition-all focus:outline-none">
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1.5">Company / Studio</label>
+                                <input type="text" id="company" class="w-full bg-slate-50 border border-slate-200 focus:bg-white focus:border-orange-500 rounded-xl px-4 py-2.5 text-xs text-slate-800 transition-all focus:outline-none">
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-700 mb-1.5">Location</label>
+                                    <select id="location" class="w-full bg-slate-50 border border-slate-200 focus:bg-white focus:border-orange-500 rounded-xl px-4 py-2.5 text-xs font-semibold text-slate-800 transition-all focus:outline-none cursor-pointer">
+                                        <option value="Thailand">Thailand</option>
+                                        <option value="United States">United States</option>
+                                        <option value="Japan">Japan</option>
+                                        <option value="Singapore">Singapore</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-700 mb-1.5">City</label>
+                                    <input type="text" id="city" placeholder="Bangkok" class="w-full bg-slate-50 border border-slate-200 focus:bg-white focus:border-orange-500 rounded-xl px-4 py-2.5 text-xs text-slate-800 transition-all focus:outline-none">
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1.5">Website / Portfolio URL</label>
+                                <input type="url" id="website-url" placeholder="https://yourwebsite.com" class="w-full bg-slate-50 border border-slate-200 focus:bg-white focus:border-orange-500 rounded-xl px-4 py-2.5 text-xs text-slate-800 transition-all focus:outline-none">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SECTION 2: SOCIAL LINKS -->
+                    <div id="section-social-links" class="space-y-6 hidden">
+                        <div class="pb-6 mb-6 border-b border-slate-100">
+                            <h1 class="text-xl font-extrabold text-slate-900 tracking-tight">Social Links</h1>
+                            <p class="text-xs text-slate-400 mt-1">ใส่ลิงก์โซเชียลมีเดียของคุณเพื่อให้ผู้คนติดตามผลงานเพิ่มเติมได้ง่ายขึ้น</p>
+                        </div>
+
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1.5">Instagram</label>
+                                <input type="url" id="social-instagram" placeholder="https://www.instagram.com/yourusername" class="w-full bg-slate-50 border border-slate-200 focus:bg-white focus:border-orange-500 rounded-xl px-4 py-2.5 text-xs text-slate-800 transition-all focus:outline-none">
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1.5">Facebook</label>
+                                <input type="url" id="social-facebook" placeholder="https://www.facebook.com/yourusername" class="w-full bg-slate-50 border border-slate-200 focus:bg-white focus:border-orange-500 rounded-xl px-4 py-2.5 text-xs text-slate-800 transition-all focus:outline-none">
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1.5">X (Twitter)</label>
+                                <input type="url" id="social-twitter" placeholder="https://x.com/yourusername" class="w-full bg-slate-50 border border-slate-200 focus:bg-white focus:border-orange-500 rounded-xl px-4 py-2.5 text-xs text-slate-800 transition-all focus:outline-none">
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1.5">GitHub</label>
+                                <input type="url" id="social-github" placeholder="https://github.com/yourusername" class="w-full bg-slate-50 border border-slate-200 focus:bg-white focus:border-orange-500 rounded-xl px-4 py-2.5 text-xs text-slate-800 transition-all focus:outline-none">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Footer -->
+                    <div class="flex items-center justify-end pt-6 border-t border-slate-100 gap-3">
+                        <button type="submit" id="btn-save-changes" class="bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs px-8 py-2.5 rounded-full transition-all shadow-md shadow-orange-500/20 active:scale-95 flex items-center gap-2">
+                            <span>Save Changes</span>
+                        </button>
+                    </div>
+                </form>
+            </section>
+        </div>
+    </main>
+
+    <!-- CROPPER MODAL -->
+    <div id="crop-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 hidden z-50">
+        <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl relative overflow-hidden flex flex-col space-y-4">
+            <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+                <h3 class="text-sm font-extrabold text-slate-900 uppercase tracking-wider">Crop Profile Image</h3>
+                <button type="button" id="btn-cancel-crop-icon" class="text-slate-400 hover:text-slate-600 text-sm">✕</button>
+            </div>
+            
+            <div class="w-full h-72 bg-zinc-950 rounded-2xl overflow-hidden flex items-center justify-center">
+                <img id="crop-image-element" class="max-w-full max-h-full block" src="" alt="Crop Area">
+            </div>
+
+            <div class="flex items-center justify-between pt-2">
+                <span class="text-[11px] text-slate-400">ลากเพื่อจัดตำแหน่งรูปภาพ</span>
+                <div class="flex space-x-2">
+                    <button id="btn-cancel-crop" type="button" class="px-4 py-2 rounded-full text-slate-600 hover:bg-slate-100 font-bold text-xs transition-all">
+                        Cancel
+                    </button>
+                    <button id="btn-apply-crop" type="button" class="px-5 py-2 rounded-full bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs transition-all shadow-md shadow-orange-500/20 active:scale-95">
+                        Apply & Save
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+    <script type="module" src="./js/edit-profile.js"></script>
+</body>
+</html>

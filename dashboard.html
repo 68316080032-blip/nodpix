@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VG HUB | Member Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Lato:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="./js/css/style.css">
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 50%, #e2e8f0 100%);
+            --accent-orange: #f97316;
+            --glass-white: rgba(255, 255, 255, 0.45);
+            --glass-border: rgba(255, 255, 255, 0.6);
+            --text-main: #1e293b;
+        }
+
+        body { 
+            background: var(--bg-gradient);
+            font-family: 'Lato', 'Poppins', sans-serif;
+            color: var(--text-main);
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .glass-card {
+            background: var(--glass-white);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            box-shadow: 0 10px 30px -10px rgba(148, 163, 184, 0.3);
+        }
+
+        .glass-modal {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(30px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+        }
+
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.03); }
+        ::-webkit-scrollbar-thumb { background: var(--accent-orange); border-radius: 10px; }
+
+        input, select, textarea {
+            background: rgba(255, 255, 255, 0.8) !important;
+            border: 1px solid rgba(0, 0, 0, 0.08) !important;
+            color: var(--text-main) !important;
+            transition: all 0.3s ease;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--accent-orange) !important;
+            background: #ffffff !important;
+            box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.15) !important;
+        }
+    </style>
+</head>
+<body class="antialiased overflow-x-hidden pb-24">
+
+    <header class="glass-card sticky top-0 z-50 mx-4 mt-4 px-8 py-4 flex items-center justify-between">
+        <div class="flex items-center space-x-4">
+            <div class="w-10 h-10 bg-orange-600 rounded-xl flex items-center justify-center shadow-lg shadow-orange-600/20">
+                <span class="text-white font-black text-xl">VG</span>
+            </div>
+            <div>
+                <h1 class="text-lg font-bold tracking-tight text-slate-800">MEMBER // <span class="text-orange-500">DASHBOARD</span></h1>
+                <p class="text-[10px] uppercase tracking-[0.2em] text-slate-400 mt-1">Portfolio Hub</p>
+            </div>
+        </div>
+        <div class="flex items-center space-x-3">
+            <a href="index.html" class="px-4 py-2 rounded-xl bg-slate-200/50 hover:bg-slate-200/80 text-xs font-semibold text-slate-600 border border-slate-300/50 transition-all flex items-center shadow-sm">
+                กลับหน้าหลัก
+            </a>
+            <button id="btn-logout" class="px-4 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-bold border border-rose-200/60 transition-all shadow-sm">
+                ออกจากระบบ
+            </button>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto w-full p-4 md:p-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
+        
+        <section class="lg:col-span-4 space-y-6">
+            <div class="glass-card p-6 flex flex-col items-center justify-center text-center relative overflow-hidden group">
+                <button id="btn-open-profile-modal" class="absolute top-4 right-4 text-slate-400 hover:text-orange-500 text-sm p-2 bg-slate-100 rounded-full border shadow-sm">⚙️</button>
+                
+                <div id="left-avatar-zone" class="w-24 h-24 rounded-full overflow-hidden border-4 border-white shadow-md mb-4 flex items-center justify-center bg-slate-200">
+                    <div class="w-full h-full bg-slate-300 animate-pulse"></div>
+                </div>
+
+                <div class="space-y-1">
+                    <h2 id="left-name-display" class="text-base font-bold text-slate-800">Loading...</h2>
+                    <p id="left-role-display" class="text-[9px] text-orange-600 font-bold tracking-widest uppercase bg-orange-50 px-2 py-0.5 rounded-full inline-block border">USER</p>
+                </div>
+
+                <button id="lnk-edit-profile" class="text-[11px] text-slate-400 underline hover:text-orange-500 mt-3 block">คลิกเพื่อแก้ไขข้อมูลโปรไฟล์</button>
+
+                <div class="grid grid-cols-2 gap-3 mt-5 pt-4 border-t border-slate-200/50 w-full">
+                    <div class="p-2.5 bg-orange-50/60 border rounded-xl">
+                        <p class="text-[9px] font-bold text-orange-500 uppercase">ผลงานของคุณ</p>
+                        <h4 id="stats-total-posts" class="text-base font-black text-slate-800 mt-0.5">0</h4>
+                    </div>
+                    <div class="p-2.5 bg-rose-50/60 border rounded-xl">
+                        <p class="text-[9px] font-bold text-rose-500 uppercase">ไลค์ที่ได้รับ</p>
+                        <h4 id="stats-total-likes" class="text-base font-black text-slate-800 mt-0.5">0</h4>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-card p-6 space-y-5">
+                <div class="flex items-center space-x-3">
+                    <div class="w-2 h-6 bg-orange-500 rounded-full"></div>
+                    <h2 class="text-base font-bold text-slate-800">Upload Portfolio</h2>
+                </div>
+                
+                <div class="bg-[#18181b]/95 border border-zinc-800 rounded-2xl p-4 text-zinc-300 text-[11px] leading-relaxed space-y-2 shadow-xl">
+                    <p class="font-bold text-orange-400 flex items-center gap-1 text-xs">
+                        <span>📢</span> วิธีการอัปโหลดและข้อกำหนดความปลอดภัย:
+                    </p>
+                    <ul class="list-disc list-inside space-y-1 text-zinc-400 pl-1">
+                        <li><strong class="text-emerald-400">⚡ ระบบอนุมัติออโต้:</strong> ทั้งการลงงานใหม่และแก้งานเดิม หากตรวจสอบแล้ว<span class="text-emerald-400">ไม่มีคำหยาบ</span> งานจะอัปเดตและเผยแพร่บนหน้าเว็บหลักทันที!</li>
+                        <li><strong class="text-rose-400">⚠️ กรณีติดฟิลเตอร์:</strong> หากระบบตรวจพบข้อความหรือคำต้องสงสัย งานชิ้นนั้นจะถูกส่งไปที่กล่องตรวจสอบหลังบ้านเพื่อให้แอดมินพิจารณาปล่อยผ่านด้วยตนเอง</li>
+                        <li><strong class="text-amber-400">ลิงก์รูปภาพ Google Drive:</strong> ต้องตั้งค่าการแชร์ให้เป็น <span class="text-sky-400">"ทุกคนที่มีลิงก์ (Public)"</span> เสมอ และจะถูกล็อกไม่ให้แก้ไขในภายหลังเพื่อความปลอดภัย</li>
+                    </ul>
+                </div>
+
+                <form id="form-submit-portfolio" class="space-y-4 text-xs">
+                    <div class="space-y-1">
+                        <label class="font-bold text-slate-500">Project Title</label>
+                        <input type="text" id="port-title" class="w-full rounded-xl px-4 py-3" placeholder="ชื่อผลงานของคุณ..." required>
+                    </div>
+                    <div class="space-y-1">
+                        <label class="font-bold text-slate-500">Category</label>
+                        <select id="port-category" class="w-full rounded-xl px-4 py-3">
+                            <option value="2D Graphic Design">2D Graphic Design</option>
+                            <option value="3D & Motion Graphics">3D & Motion Graphics</option>
+                            <option value="Video Editor">Video Editor</option>
+                            <option value="Photography">Photography</option>
+                        </select>
+                        <p class="text-[10px] text-slate-400/90 leading-relaxed pt-1 px-1">
+                            💡 <strong>คำแนะนำหมวดหมู่:</strong> <br>
+                            • <b>2D Graphic:</b> งานออกแบบแบนเนอร์, โปสเตอร์, UI, โลโก้, และกราฟิกทั่วไป<br>
+                            • <b>3D & Motion:</b> โมเดลสามมิติ, งานอนิเมชั่น และกราฟิกเคลื่อนไหวประกอบเสียง<br>
+                            • <b>Video Editor:</b> งานตัดต่อวิดีโอ, คลิปสั้นหนังสั้น, หนังโฆษณา, และ Vlog<br>
+                            • <b>Photography:</b> ภาพถ่ายจัดแสงสตูดิโอ, ทิวทัศน์, และภาพที่ผ่านการแต่งโทนสี
+                        </p>
+                    </div>
+                    <div class="space-y-1">
+                        <label class="font-bold text-slate-500">Image Link (Google Drive)</label>
+                        <input type="url" id="port-img" class="w-full rounded-xl px-4 py-3" placeholder="https://drive.google.com/..." required>
+                    </div>
+                    <div class="space-y-1">
+                        <label class="font-bold text-slate-500">Description</label>
+                        <textarea id="port-desc" rows="4" class="w-full rounded-xl px-4 py-3 resize-none" placeholder="อธิบายรายละเอียดผลงานชิ้นนี้สั้นๆ..."></textarea>
+                    </div>
+                    <button type="submit" class="w-full py-3 bg-orange-600 hover:bg-orange-500 text-white font-bold rounded-xl shadow-lg transition-all">Submit Work 🚀</button>
+                </form>
+            </div>
+        </section>
+
+        <section class="lg:col-span-8 space-y-6">
+            <div class="glass-card p-8 min-h-[500px]">
+                
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8 pb-4 border-b border-slate-200/40">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-2 h-8 bg-orange-500 rounded-full"></div>
+                        <h2 class="text-xl font-bold text-slate-800">My Submissions</h2>
+                    </div>
+                    <div id="pagination-controls" class="flex items-center space-x-1.5 bg-slate-100/60 p-1 rounded-xl border border-slate-200/30">
+                    </div>
+                </div>
+
+                <div id="my-portfolio-list" class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <div class="sm:col-span-2 text-center text-slate-400 py-12">กำลังเชื่อมต่อความปลอดภัยและดึงข้อมูลผลงานของคุณ...</div>
+                </div>
+
+            </div>
+        </section>
+    </main>
+
+    <div id="modal-edit-profile" class="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-900/40 hidden backdrop-blur-sm">
+        <div class="glass-modal w-full max-w-md rounded-[32px] p-8 shadow-2xl space-y-6">
+            <div class="flex items-center justify-between border-b pb-4">
+                <h3 class="text-base font-bold text-slate-800">⚙️ Edit Profile Settings</h3>
+                <button id="btn-close-profile-modal" class="text-slate-400 hover:text-slate-800">✕</button>
+            </div>
+            <form id="form-update-profile" class="space-y-4 text-xs">
+                <div class="space-y-1">
+                    <label class="font-bold text-slate-500">Display Name</label>
+                    <input type="text" id="profile-name" class="w-full rounded-xl px-4 py-3" required>
+                </div>
+                <div class="space-y-1">
+                    <label class="font-bold text-slate-500">Avatar URL</label>
+                    <input type="url" id="profile-avatar" class="w-full rounded-xl px-4 py-3">
+                </div>
+                <div class="flex items-center justify-end space-x-3 pt-4 border-t">
+                    <button type="button" id="btn-cancel-profile-modal" class="px-5 py-2.5 text-slate-400 font-bold">CANCEL</button>
+                    <button type="submit" class="px-6 py-2.5 bg-orange-600 text-white rounded-xl font-bold shadow-md">SAVE CHANGES</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="portfolio-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-3xl max-w-4xl w-full max-h-[90vh] overflow-hidden shadow-2xl flex flex-col md:flex-row">
+            <div class="md:w-3/5 bg-slate-950 relative flex items-center justify-center">
+                <img id="modal-img" src="" referrerpolicy="no-referrer" class="w-full h-full object-contain max-h-[50vh] md:max-h-[80vh]">
+                <button id="modal-close-btn" class="absolute top-4 left-4 w-8 h-8 rounded-full bg-slate-900/40 text-white flex items-center justify-center">✕</button>
+            </div>
+            <div class="md:w-2/5 p-6 flex flex-col justify-between h-[45vh] md:h-[80vh] bg-slate-50 border-l">
+                <div class="overflow-y-auto pr-1 flex-grow space-y-4">
+                    <div class="flex items-center justify-between">
+                        <span id="modal-category" class="text-[10px] font-bold text-orange-500 uppercase tracking-widest">CATEGORY</span>
+                        <div id="owner-action-zone" class="space-x-1 hidden">
+                            <button id="btn-trigger-edit-post" class="bg-blue-50 text-blue-600 border border-blue-200 px-2 py-0.5 rounded-md text-[10px] font-bold hover:bg-blue-100 transition-all">✏️ แก้ไข</button>
+                            <button id="btn-trigger-delete-post" class="bg-rose-50 text-rose-600 border border-rose-200 px-2 py-0.5 rounded-md text-[10px] font-bold hover:bg-rose-100 transition-all">🗑️ ลบ</button>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 id="modal-title" class="text-lg font-bold text-slate-800 mt-0.5">Title</h3>
+                        <p id="modal-desc" class="text-xs text-slate-600 mt-2 leading-relaxed whitespace-pre-wrap">Description...</p>
+                    </div>
+                    <hr class="border-slate-200">
+                    <div>
+                        <h5 class="text-xs font-bold text-slate-700 mb-2">ความคิดเห็น (<span id="modal-comment-count">0</span>)</h5>
+                        <div id="modal-comments-container" class="space-y-2 max-h-[200px] overflow-y-auto text-xs"></div>
+                    </div>
+                </div>
+                <div class="pt-4 border-t space-y-3">
+                    <button id="modal-like-btn" class="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl border border-slate-200 text-xs text-slate-500 hover:bg-rose-50 hover:text-rose-500 transition-all">
+                        <span>❤️</span> <span id="modal-like-count">0</span> Likes
+                    </button>
+                    <form id="modal-comment-form" class="flex items-center space-x-2">
+                        <input type="text" id="modal-comment-input" placeholder="เขียนความคิดเห็นของคุณ..." required class="flex-grow text-xs px-3 py-2 rounded-xl border bg-white focus:outline-none">
+                        <button type="submit" class="bg-slate-900 text-white text-xs px-3 py-2 rounded-xl font-bold">ส่ง</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-edit-portfolio" class="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-900/40 hidden backdrop-blur-sm">
+        <div class="glass-modal w-full max-w-md rounded-[32px] p-8 shadow-2xl space-y-4">
+            <div class="flex items-center justify-between border-b pb-2">
+                <h3 class="text-sm font-bold text-slate-800">✏️ แก้ไขข้อมูลผลงาน</h3>
+                <button id="btn-close-edit-port-modal" class="text-slate-400 hover:text-slate-800">✕</button>
+            </div>
+            <form id="form-update-portfolio" class="space-y-3 text-xs">
+                <div class="space-y-1">
+                    <label class="font-bold text-slate-500">ชื่อผลงาน</label>
+                    <input type="text" id="edit-port-title" class="w-full rounded-xl px-4 py-2.5" required>
+                </div>
+                <div class="space-y-1">
+                    <label class="font-bold text-slate-500">หมวดหมู่ผลงาน</label>
+                    <select id="edit-port-category" class="w-full rounded-xl px-4 py-2.5" required>
+                        <option value="2D Graphic Design">2D Graphic Design</option>
+                        <option value="3D & Motion Graphics">3D & Motion Graphics</option>
+                        <option value="Video Editor">Video Editor</option>
+                        <option value="Photography">Photography</option>
+                    </select>
+                </div>
+                <div class="space-y-1">
+                    <label class="font-bold text-slate-500">ลิงก์รูปภาพ Google Drive (ล็อกไม่ให้แก้ไข)</label>
+                    <input type="url" id="edit-port-image" class="w-full rounded-xl px-4 py-2.5 bg-slate-100/80 cursor-not-allowed text-slate-400" readonly required>
+                </div>
+                <div class="space-y-1">
+                    <label class="font-bold text-slate-500">คำอธิบาย</label>
+                    <textarea id="edit-port-desc" rows="3" class="w-full rounded-xl px-4 py-2.5 resize-none"></textarea>
+                </div>
+                <div class="flex items-center justify-end space-x-2 pt-2 border-t">
+                    <button type="button" id="btn-cancel-edit-port-modal" class="px-4 py-2 text-slate-400 font-bold">ยกเลิก</button>
+                    <button type="submit" class="px-5 py-2 bg-orange-600 text-white rounded-xl font-bold shadow-md">บันทึกการแก้ไข</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="custom-alert-modal" class="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-950/20 backdrop-blur-md opacity-0 pointer-events-none transition-all duration-300">
+        <div class="w-full max-w-sm rounded-[28px] p-6 text-center border shadow-2xl transform scale-90 transition-all duration-300" 
+             style="background: rgba(255, 255, 255, 0.45); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-color: rgba(255, 255, 255, 0.5);">
+            
+            <div id="custom-alert-icon" class="w-14 h-14 mx-auto rounded-full flex items-center justify-center text-2xl shadow-inner mb-4">
+                ✨
+            </div>
+            
+            <div id="custom-alert-message" class="text-xs font-bold text-slate-700 leading-relaxed mb-6 whitespace-pre-line">
+                ข้อความแจ้งเตือน
+            </div>
+            
+            <button id="custom-alert-close" class="w-full py-3 bg-slate-900/90 hover:bg-slate-900 text-white text-xs font-bold rounded-2xl shadow-md transition-all active:scale-[0.98]">
+                ตกลง
+            </button>
+        </div>
+    </div>
+
+    <script>
+        window.showCustomAlert = function(message, type = 'success') {
+            const modal = document.getElementById('custom-alert-modal');
+            const card = modal?.querySelector('div');
+            const iconZone = document.getElementById('custom-alert-icon');
+            const msgZone = document.getElementById('custom-alert-message');
+            const closeBtn = document.getElementById('custom-alert-close');
+            
+            if (!modal || !card || !iconZone || !msgZone) return;
+
+            if (type === 'error') {
+                iconZone.innerText = '❌';
+                iconZone.className = "w-14 h-14 mx-auto rounded-full flex items-center justify-center text-2xl mb-4 bg-rose-500/20 border border-rose-500/30 text-rose-500";
+            } else if (type === 'warning') {
+                iconZone.innerText = '⚠️';
+                iconZone.className = "w-14 h-14 mx-auto rounded-full flex items-center justify-center text-2xl mb-4 bg-amber-500/20 border border-amber-500/30 text-amber-600";
+            } else {
+                iconZone.innerText = '✨';
+                iconZone.className = "w-14 h-14 mx-auto rounded-full flex items-center justify-center text-2xl mb-4 bg-orange-500/20 border border-orange-500/30 text-orange-600";
+            }
+
+            msgZone.innerHTML = message;
+
+            modal.classList.remove('opacity-0', 'pointer-events-none');
+            card.classList.remove('scale-90');
+            card.classList.add('scale-100');
+
+            const closeModal = () => {
+                modal.classList.add('opacity-0', 'pointer-events-none');
+                card.classList.remove('scale-100');
+                card.classList.add('scale-90');
+            };
+
+            closeBtn.onclick = closeModal;
+            modal.onclick = (e) => { if(e.target === modal) closeModal(); };
+        };
+    </script>
+
+    <script src="/js/dashboard.js?v=9.0" type="module"></script>
+</body>
+</html>
