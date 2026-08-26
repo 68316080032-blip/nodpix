@@ -1,9 +1,9 @@
 import { auth, db } from "./firebase-config.js";
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import { 
-    doc, getDoc, updateDoc, deleteDoc, collection, query, where, onSnapshot, orderBy, getDocs, addDoc 
+    doc, getDoc, updateDoc, deleteDoc, collection, query, where, onSnapshot, orderBy, addDoc 
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-import { convertDriveUrl, formatRelativeTime, parseSocialLink } from "./utils.js";
+import { convertDriveUrl, formatRelativeTime } from "./utils.js";
 
 // Global Live States
 let loggedInUserId = null;
@@ -26,9 +26,7 @@ function getUserIdFromUrlOrAuth() {
     const urlParams = new URLSearchParams(window.location.search);
     const idFromUrl = urlParams.get('id');
     
-    if (idFromUrl) {
-        return idFromUrl;
-    }
+    if (idFromUrl) return idFromUrl;
     
     if (loggedInUserId) {
         const newUrl = `${window.location.pathname}?id=${loggedInUserId}`;
@@ -39,13 +37,17 @@ function getUserIdFromUrlOrAuth() {
     return null;
 }
 
+// 🔢 คำนวณจำนวนไลค์ (ปรับปรุงรองรับ Array และ Edge Cases)
 function parseLikesCount(data) {
     if (!data) return 0;
     if (typeof data.likes === "number" && !isNaN(data.likes)) return data.likes;
+    if (Array.isArray(data.likes)) return data.likes.length;
+    if (Array.isArray(data.likedBy)) return data.likedBy.length;
     if (data.likedBy && typeof data.likedBy === "object") {
         if (typeof data.likedBy.likesCount === "number" && !isNaN(data.likedBy.likesCount)) {
             return data.likedBy.likesCount;
         }
+        return Object.values(data.likedBy).filter(Boolean).length;
     }
     const parsed = parseInt(data.likes, 10);
     return isNaN(parsed) ? 0 : parsed;
@@ -76,15 +78,13 @@ const toast = (msg, type = "success") => {
     }`;
 
     const icon = type === "success" ? "✨" : type === "error" ? "❌" : "⚠️";
-
     toastEl.innerHTML = `
         <span class="mr-2.5 text-sm">${icon}</span>
         <p class="text-xs font-bold tracking-wide">${msg}</p>
     `;
 
     container.appendChild(toastEl);
-
-    setTimeout(() => { toastEl.classList.remove("translate-y-2", "opacity-0"); }, 10);
+    setTimeout(() => toastEl.classList.remove("translate-y-2", "opacity-0"), 10);
     setTimeout(() => {
         toastEl.classList.add("opacity-0", "translate-y-[-10px]");
         setTimeout(() => toastEl.remove(), 300);
@@ -158,7 +158,7 @@ function openAvatarPreviewPopup(imgSrc) {
         const closeFunc = (e) => {
             if (e) { e.preventDefault(); e.stopPropagation(); }
             previewModal.classList.add("opacity-0");
-            previewModal.querySelector("#avatar-preview-content").classList.add("scale-95");
+            previewModal.querySelector("#avatar-preview-content")?.classList.add("scale-95");
             setTimeout(() => {
                 previewModal.classList.add("hidden");
                 previewModal.style.display = "none";
@@ -170,13 +170,13 @@ function openAvatarPreviewPopup(imgSrc) {
     }
     
     const previewImg = previewModal.querySelector("#avatar-preview-img");
-    previewImg.src = convertDriveUrl(imgSrc);
+    if (previewImg) previewImg.src = convertDriveUrl(imgSrc);
     
     previewModal.classList.remove("hidden");
     previewModal.style.display = "flex";
     setTimeout(() => {
         previewModal.classList.remove("opacity-0");
-        previewModal.querySelector("#avatar-preview-content").classList.remove("scale-95");
+        previewModal.querySelector("#avatar-preview-content")?.classList.remove("scale-95");
     }, 10);
 }
 
@@ -212,21 +212,18 @@ function renderSocialLinks(socials = {}, lineId = "") {
     const platforms = [
         {
             key: 'facebook',
-            name: 'Facebook',
             url: socials.facebook,
             bgClass: 'bg-[#1877F2]/10 hover:bg-[#1877F2]/20 text-[#1877F2] border-[#1877F2]/20',
             svg: `<svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>`
         },
         {
             key: 'instagram',
-            name: 'Instagram',
             url: socials.instagram,
             bgClass: 'bg-rose-500/10 hover:bg-rose-500/20 text-[#E4405F] border-rose-500/20',
             svg: `<svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>`
         },
         {
             key: 'website',
-            name: 'Website',
             url: socials.website,
             bgClass: 'bg-emerald-500/10 hover:bg-emerald-500/20 text-[#10B981] border-emerald-500/20',
             svg: `<svg class="w-3.5 h-3.5 fill-none stroke-current" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/></svg>`
@@ -250,10 +247,9 @@ function renderSocialLinks(socials = {}, lineId = "") {
     container.innerHTML = html;
 }
 
-// 👤 อัปเดต DOM ส่วนของ Profile
+// 👤 อัปเดต DOM ส่วน Profile
 function updateProfileDOM(name, avatarUrl, email = "", bio = "", bannerUrl = "", socials = {}, purpose = "freelance", lineId = "") {
-    const nameTargets = ["user-display-name", "left-name-display", "profile-name-display", "user-name-display"];
-    nameTargets.forEach(id => {
+    ["user-display-name", "left-name-display", "profile-name-display", "user-name-display"].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.innerText = name;
     });
@@ -263,11 +259,10 @@ function updateProfileDOM(name, avatarUrl, email = "", bio = "", bannerUrl = "",
 
     const defaultAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=f97316&color=fff`;
     const finalAvatar = avatarUrl || defaultAvatar;
-    const finalAvatarSrc = convertDriveUrl(finalAvatar);
 
     const userAvatarEl = document.getElementById("user-avatar");
     if (userAvatarEl) {
-        userAvatarEl.src = finalAvatarSrc;
+        userAvatarEl.src = convertDriveUrl(finalAvatar);
         userAvatarEl.onerror = () => { userAvatarEl.src = defaultAvatar; };
         userAvatarEl.onclick = () => openAvatarPreviewPopup(avatarUrl || defaultAvatar);
     }
@@ -275,8 +270,7 @@ function updateProfileDOM(name, avatarUrl, email = "", bio = "", bannerUrl = "",
     const DEFAULT_SITE_BANNER = "/img/banner.jpg";
     const bannerEl = document.getElementById("profile-banner-img");
     if (bannerEl) {
-        const finalBanner = bannerUrl ? convertDriveUrl(bannerUrl) : DEFAULT_SITE_BANNER;
-        bannerEl.src = finalBanner;
+        bannerEl.src = bannerUrl ? convertDriveUrl(bannerUrl) : DEFAULT_SITE_BANNER;
         bannerEl.onerror = () => { bannerEl.src = DEFAULT_SITE_BANNER; };
     }
 
@@ -296,27 +290,32 @@ function updateProfileDOM(name, avatarUrl, email = "", bio = "", bannerUrl = "",
 
     renderSocialLinks(socials, lineId);
 
-    if (document.getElementById("edit-bio")) document.getElementById("edit-bio").value = bio || "";
-    if (document.getElementById("edit-line")) document.getElementById("edit-line").value = lineId || "";
-    if (document.getElementById("edit-facebook")) document.getElementById("edit-facebook").value = socials.facebook || "";
-    if (document.getElementById("edit-instagram")) document.getElementById("edit-instagram").value = socials.instagram || "";
-    if (document.getElementById("edit-website")) document.getElementById("edit-website").value = socials.website || "";
+    const editBio = document.getElementById("edit-bio");
+    const editLine = document.getElementById("edit-line");
+    const editFb = document.getElementById("edit-facebook");
+    const editIg = document.getElementById("edit-instagram");
+    const editWeb = document.getElementById("edit-website");
+
+    if (editBio) editBio.value = bio || "";
+    if (editLine) editLine.value = lineId || "";
+    if (editFb) editFb.value = socials.facebook || "";
+    if (editIg) editIg.value = socials.instagram || "";
+    if (editWeb) editWeb.value = socials.website || "";
 
     const purposeRadio = document.querySelector(`input[name="user_purpose"][value="${purpose}"]`);
     if (purposeRadio) purposeRadio.checked = true;
 }
 
-// 🌐 อัปเดต DOM ส่วน Navbar
+// 🌐 อัปเดต DOM Navbar
 async function updateNavbarDOM(user) {
     if (!user) return;
 
-    let name = user.displayName || user.email.split('@')[0] || "User";
+    let name = user.displayName || user.email?.split('@')[0] || "User";
     let email = user.email || "";
     let avatarUrl = user.photoURL || "";
 
     try {
-        const userDocRef = doc(db, "users", user.uid);
-        const userDoc = await getDoc(userDocRef);
+        const userDoc = await getDoc(doc(db, "users", user.uid));
         if (userDoc.exists()) {
             const userData = userDoc.data();
             name = userData.displayName || userData.fullName || userData.name || name;
@@ -344,29 +343,24 @@ async function updateNavbarDOM(user) {
     });
 }
 
-// 🔍 ฟังก์ชันแสดงผลและกรองโพสต์ด้วยระบบค้นหา (Fuzzy Match)
+// 🔍 ฟังก์ชันแสดงผลและกรองโพสต์ (Fuzzy Match & Paginated)
 function renderPaginatedPosts() {
     const listContainer = document.getElementById("user-projects-grid");
     const paginationContainer = document.getElementById("pagination-controls");
     if (!listContainer) return;
 
     listContainer.innerHTML = "";
-
     const cleanQuery = (searchQuery || "").trim().toLowerCase();
 
     const filteredPosts = cachedUserPosts.filter(item => {
         if (!cleanQuery) return true;
-        
         const pData = item.data || {};
-        const title = (pData.title || (pData.likedBy ? pData.likedBy.title : '') || '').toLowerCase();
-        const category = normalizeCategory(pData.category || (pData.likedBy ? pData.likedBy.category : '')).toLowerCase();
+        const title = (pData.title || pData.likedBy?.title || '').toLowerCase();
+        const category = normalizeCategory(pData.category || pData.likedBy?.category).toLowerCase();
         const desc = (pData.description || pData.desc || '').toLowerCase();
         const ownerName = (pData.ownerName || '').toLowerCase();
 
-        return title.includes(cleanQuery) || 
-               category.includes(cleanQuery) || 
-               desc.includes(cleanQuery) || 
-               ownerName.includes(cleanQuery);
+        return title.includes(cleanQuery) || category.includes(cleanQuery) || desc.includes(cleanQuery) || ownerName.includes(cleanQuery);
     });
 
     if (filteredPosts.length === 0) {
@@ -387,11 +381,10 @@ function renderPaginatedPosts() {
     paginatedPosts.forEach((item) => {
         const pData = item.data; 
         const pId = item.id;
-        
-        let likesCount = parseLikesCount(pData);
-        const displayTitle = pData.title || (pData.likedBy ? pData.likedBy.title : 'Untitled');
-        const displayImage = pData.imgLink || pData.image || pData.coverUrl || pData.imageUrl || pData.img || (pData.likedBy ? pData.likedBy.image : '');
-        let displayCategory = normalizeCategory(pData.category || (pData.likedBy ? pData.likedBy.category : '2D Graphic Design'));
+        const likesCount = parseLikesCount(pData);
+        const displayTitle = pData.title || pData.likedBy?.title || 'Untitled';
+        const displayImage = pData.imgLink || pData.image || pData.coverUrl || pData.imageUrl || pData.img || pData.likedBy?.image || '';
+        const displayCategory = normalizeCategory(pData.category || pData.likedBy?.category);
 
         const card = document.createElement("div");
         card.className = "bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md border border-slate-100 transition-all cursor-pointer group animate-fade-in flex flex-col justify-between";
@@ -460,11 +453,10 @@ function setupSearchInputs() {
 
 // 🚀 ดึงข้อมูล Firestore ตาม Target UID
 async function initProfilePage() {
-    if (portfolioUnsubscribe) portfolioUnsubscribe();
-    if (savedUnsubscribe) savedUnsubscribe();
+    if (portfolioUnsubscribe) { portfolioUnsubscribe(); portfolioUnsubscribe = null; }
+    if (savedUnsubscribe) { savedUnsubscribe(); savedUnsubscribe = null; }
 
     targetUserId = getUserIdFromUrlOrAuth();
-
     if (!targetUserId) return;
 
     const editBtn = document.getElementById("btn-open-edit-modal");
@@ -477,12 +469,9 @@ async function initProfilePage() {
     }
 
     try {
-        const userDocRef = doc(db, "users", targetUserId);
-        const userDoc = await getDoc(userDocRef);
-        
+        const userDoc = await getDoc(doc(db, "users", targetUserId));
         if (userDoc.exists()) {
             const userData = userDoc.data();
-
             const finalName = userData.displayName || userData.fullName || userData.name || "User Creator";
             const finalAvatar = userData.photoURL || userData.avatar || userData.avatarUrl || "";
             const finalEmail = userData.email || userData.otherContact || "";
@@ -502,39 +491,42 @@ async function initProfilePage() {
         }
     }
 
-    const handlePortfolioSnapshot = (snapshot) => {
-        cachedUserPosts = [];
-        let totalLikesCount = 0;
-
-        snapshot.forEach((postDoc) => { 
-            const pData = postDoc.data();
-            const targetUid = pData.ownerId || pData.ownerUid || pData.uid || pData.userId || pData.authorId || pData.createdBy;
-            if (targetUid === targetUserId) {
-                cachedUserPosts.push({ id: postDoc.id, data: pData }); 
-            }
-        });
-
-        cachedUserPosts.sort((a, b) => new Date(b.data.createdAt || 0) - new Date(a.data.createdAt || 0));
-
-        cachedUserPosts.forEach(item => {
-            totalLikesCount += parseLikesCount(item.data);
-        });
-
-        if (document.getElementById("stat-projects")) document.getElementById("stat-projects").innerText = cachedUserPosts.length;
-        if (document.getElementById("stats-total-posts")) document.getElementById("stats-total-posts").innerText = cachedUserPosts.length;
-        if (document.getElementById("stat-likes")) document.getElementById("stat-likes").innerText = totalLikesCount;
-        if (document.getElementById("stats-total-likes")) document.getElementById("stats-total-likes").innerText = totalLikesCount;
-
-        renderPaginatedPosts();
-    };
-
+    // Realtime Listener Portfolio ผลงาน
     try {
         const portfolioQuery = query(collection(db, "portfolios"));
         portfolioUnsubscribe = onSnapshot(portfolioQuery, (snapshot) => {
-            handlePortfolioSnapshot(snapshot);
+            cachedUserPosts = [];
+            let totalLikesCount = 0;
+
+            snapshot.forEach((postDoc) => { 
+                const pData = postDoc.data();
+                const targetUid = pData.ownerId || pData.ownerUid || pData.uid || pData.userId || pData.authorId || pData.createdBy;
+                if (targetUid === targetUserId) {
+                    cachedUserPosts.push({ id: postDoc.id, data: pData }); 
+                }
+            });
+
+            cachedUserPosts.sort((a, b) => new Date(b.data.createdAt || 0) - new Date(a.data.createdAt || 0));
+
+            cachedUserPosts.forEach(item => {
+                totalLikesCount += parseLikesCount(item.data);
+            });
+
+            const statProjects = document.getElementById("stat-projects");
+            const statsTotalPosts = document.getElementById("stats-total-posts");
+            const statLikes = document.getElementById("stat-likes");
+            const statsTotalLikes = document.getElementById("stats-total-likes");
+
+            if (statProjects) statProjects.innerText = cachedUserPosts.length;
+            if (statsTotalPosts) statsTotalPosts.innerText = cachedUserPosts.length;
+            if (statLikes) statLikes.innerText = totalLikesCount;
+            if (statsTotalLikes) statsTotalLikes.innerText = totalLikesCount;
+
+            renderPaginatedPosts();
         });
     } catch (err) { }
 
+    // Realtime Listener โพสต์ที่บันทึกไว้
     try {
         const savedQuery = query(collection(db, "portfolios"), where(`savedBy.${targetUserId}`, "==", true));
         savedUnsubscribe = onSnapshot(savedQuery, (snapshot) => {
@@ -555,9 +547,9 @@ async function initProfilePage() {
                 const pData = postDoc.data();
                 const pId = postDoc.id;
                 const likesCount = parseLikesCount(pData);
-                const displayTitle = pData.title || (pData.likedBy ? pData.likedBy.title : 'Untitled');
-                const displayImage = pData.imgLink || pData.image || pData.coverUrl || pData.imageUrl || pData.img || (pData.likedBy ? pData.likedBy.image : '');
-                const displayCategory = normalizeCategory(pData.category || (pData.likedBy ? pData.likedBy.category : '2D Graphic Design'));
+                const displayTitle = pData.title || pData.likedBy?.title || 'Untitled';
+                const displayImage = pData.imgLink || pData.image || pData.coverUrl || pData.imageUrl || pData.img || pData.likedBy?.image || '';
+                const displayCategory = normalizeCategory(pData.category || pData.likedBy?.category);
 
                 const card = document.createElement("div");
                 card.className = "bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md border border-slate-100 transition-all cursor-pointer group animate-fade-in flex flex-col justify-between";
@@ -591,7 +583,7 @@ async function initProfilePage() {
 onAuthStateChanged(auth, async (user) => {
     if (user) {
         loggedInUserId = user.uid;
-        loggedInUserName = user.displayName || user.email.split('@')[0] || "User Creator";
+        loggedInUserName = user.displayName || user.email?.split('@')[0] || "User Creator";
         await updateNavbarDOM(user);
     } else {
         loggedInUserId = null;
@@ -678,9 +670,8 @@ function closePortfolioModal() {
     if (modalVideo && typeof modalVideo.pause === 'function') modalVideo.pause();
 }
 
-// 🎯 Event Listeners สำหรับการกดปิด Portfolio Modal ทุกช่องทาง
+// 🎯 Event Listeners สำหรับการกดปิด Portfolio Modal
 document.addEventListener("DOMContentLoaded", () => {
-    // 1. ปุ่มปิดทุกปุ่ม
     const closeBtns = document.querySelectorAll("#modal-close-btn, .close-modal-btn, [data-close-modal]");
     closeBtns.forEach(btn => {
         btn.onclick = (e) => {
@@ -689,16 +680,12 @@ document.addEventListener("DOMContentLoaded", () => {
         };
     });
 
-    // 2. คลิกพื้นที่ภายนอก (Backdrop)
     if (pModal) {
         pModal.onclick = (e) => {
-            if (e.target === pModal) {
-                closePortfolioModal();
-            }
+            if (e.target === pModal) closePortfolioModal();
         };
     }
 
-    // 3. ปุ่ม ESC บนคีย์บอร์ด
     document.addEventListener("keydown", (e) => {
         if (e.key === "Escape" && pModal && !pModal.classList.contains("hidden")) {
             closePortfolioModal();
@@ -790,10 +777,10 @@ function openPortfolioPopup(postId, postData) {
     if (modalVideo) { modalVideo.src = ""; if (typeof modalVideo.pause === 'function') modalVideo.pause(); modalVideo.classList.add("hidden"); }
     if (modalIframe) { modalIframe.src = ""; modalIframe.classList.add("hidden"); }
 
-    const rawMediaLink = postData.imgLink || postData.image || postData.coverUrl || postData.imageUrl || postData.img || (postData.likedBy ? postData.likedBy.image : '');
+    const rawMediaLink = postData.imgLink || postData.image || postData.coverUrl || postData.imageUrl || postData.img || postData.likedBy?.image || '';
     const lowerLink = (rawMediaLink || '').toLowerCase();
 
-    // 1. กรณีเป็น YouTube Video -> แสดง iframe
+    // 1. กรณีเป็น YouTube Video
     if (lowerLink.includes("youtube.com") || lowerLink.includes("youtu.be")) {
         if (!modalIframe && modalImg) {
             modalIframe = document.createElement("iframe");
@@ -803,11 +790,15 @@ function openPortfolioPopup(postId, postData) {
         if (modalIframe) {
             modalIframe.classList.remove("hidden");
             modalIframe.className = "w-full h-full object-contain bg-slate-950 border-0 block aspect-video";
-            let videoId = rawMediaLink.includes("v=") ? new URL(rawMediaLink).searchParams.get("v") : rawMediaLink.split("/").pop();
-            modalIframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
+            
+            const ytRegex = /(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([\w-]{11})/;
+            const match = rawMediaLink.match(ytRegex);
+            const videoId = match ? match[1] : '';
+
+            modalIframe.src = videoId ? `https://www.youtube.com/embed/${videoId}?autoplay=1` : rawMediaLink;
         }
     } 
-    // 2. กรณีรูปภาพทั่วไป หรือ Google Drive Image -> แสดง <img>
+    // 2. กรณีรูปภาพทั่วไป หรือ Google Drive Image
     else {
         if (modalImg) {
             modalImg.classList.remove("hidden");
@@ -818,18 +809,21 @@ function openPortfolioPopup(postId, postData) {
         }
     }
 
-    const displayTitle = postData.title || (postData.likedBy ? postData.likedBy.title : "Untitled");
-    const displayOwnerId = postData.ownerId || postData.ownerUid || postData.uid || (postData.likedBy ? postData.likedBy.ownerId : null);
-    let displayCategory = normalizeCategory(postData.category || (postData.likedBy ? postData.likedBy.category : '2D Graphic Design'));
+    const displayTitle = postData.title || postData.likedBy?.title || "Untitled";
+    const displayOwnerId = postData.ownerId || postData.ownerUid || postData.uid || postData.likedBy?.ownerId || null;
+    let displayCategory = normalizeCategory(postData.category || postData.likedBy?.category);
 
-    if (document.getElementById("modal-category")) document.getElementById("modal-category").innerText = displayCategory.toUpperCase();
-    if (document.getElementById("modal-title")) document.getElementById("modal-title").innerText = displayTitle;
-    if (document.getElementById("modal-desc")) document.getElementById("modal-desc").innerText = postData.description || postData.desc || "ไม่มีคำอธิบายเพิ่มเติม";
+    const modalCategory = document.getElementById("modal-category");
+    const modalTitle = document.getElementById("modal-title");
+    const modalDesc = document.getElementById("modal-desc");
+    const modalLikeCount = document.getElementById("modal-like-count");
+
+    if (modalCategory) modalCategory.innerText = displayCategory.toUpperCase();
+    if (modalTitle) modalTitle.innerText = displayTitle;
+    if (modalDesc) modalDesc.innerText = postData.description || postData.desc || "ไม่มีคำอธิบายเพิ่มเติม";
     
     let currentLikesCount = parseLikesCount(postData);
-    if (document.getElementById("modal-like-count")) {
-        document.getElementById("modal-like-count").innerText = currentLikesCount;
-    }
+    if (modalLikeCount) modalLikeCount.innerText = currentLikesCount;
     
     // 🔴 จัดการสถานะ Like
     const likeBtn = document.getElementById("modal-like-btn");
@@ -951,20 +945,25 @@ if (commentForm) {
     };
 }
 
-if (document.getElementById("btn-trigger-edit-post")) {
-    document.getElementById("btn-trigger-edit-post").onclick = () => {
+const btnTriggerEditPost = document.getElementById("btn-trigger-edit-post");
+if (btnTriggerEditPost) {
+    btnTriggerEditPost.onclick = () => {
         if (!activePostData) return;
-        const currentTitle = activePostData.title || (activePostData.likedBy ? activePostData.likedBy.title : "");
-        const currentImage = activePostData.imgLink || activePostData.image || activePostData.coverUrl || activePostData.imageUrl || activePostData.img || (activePostData.likedBy ? activePostData.likedBy.image : "");
+        const currentTitle = activePostData.title || activePostData.likedBy?.title || "";
+        const currentImage = activePostData.imgLink || activePostData.image || activePostData.coverUrl || activePostData.imageUrl || activePostData.img || activePostData.likedBy?.image || "";
         const currentDesc = activePostData.description || activePostData.desc || "";
 
-        if (document.getElementById("edit-port-title")) document.getElementById("edit-port-title").value = currentTitle;
-        if (document.getElementById("edit-port-image")) document.getElementById("edit-port-image").value = currentImage; 
-        if (document.getElementById("edit-port-desc")) document.getElementById("edit-port-desc").value = currentDesc;
+        const portTitle = document.getElementById("edit-port-title");
+        const portImg = document.getElementById("edit-port-image");
+        const portDesc = document.getElementById("edit-port-desc");
+
+        if (portTitle) portTitle.value = currentTitle;
+        if (portImg) portImg.value = currentImage; 
+        if (portDesc) portDesc.value = currentDesc;
         
         const categorySelect = document.getElementById("edit-port-category");
         if (categorySelect) {
-            let oldCategory = activePostData.category || (activePostData.likedBy && activePostData.likedBy.category ? activePostData.likedBy.category : "2D Graphic Design"); 
+            let oldCategory = activePostData.category || activePostData.likedBy?.category || "2D Graphic Design"; 
             categorySelect.value = normalizeCategory(oldCategory);
         }
         closePortfolioModal();
@@ -972,19 +971,21 @@ if (document.getElementById("btn-trigger-edit-post")) {
     };
 }
 
-if (document.getElementById("btn-cancel-edit-port-modal")) {
-    document.getElementById("btn-cancel-edit-port-modal").onclick = () => editPortModal.classList.add("hidden");
+const btnCancelEditPort = document.getElementById("btn-cancel-edit-port-modal");
+if (btnCancelEditPort) {
+    btnCancelEditPort.onclick = () => editPortModal.classList.add("hidden");
 }
 
-if (document.getElementById("form-update-portfolio")) {
-    document.getElementById("form-update-portfolio").onsubmit = async (e) => {
+const formUpdatePort = document.getElementById("form-update-portfolio");
+if (formUpdatePort) {
+    formUpdatePort.onsubmit = async (e) => {
         e.preventDefault();
         if (!activePostId) return;
         try {
-            const updatedTitle = document.getElementById("edit-port-title").value;
-            const updatedCategory = document.getElementById("edit-port-category").value;
-            const updatedImage = document.getElementById("edit-port-image").value;
-            const updatedDesc = document.getElementById("edit-port-desc").value;
+            const updatedTitle = document.getElementById("edit-port-title")?.value || "";
+            const updatedCategory = document.getElementById("edit-port-category")?.value || "2D Graphic Design";
+            const updatedImage = document.getElementById("edit-port-image")?.value || "";
+            const updatedDesc = document.getElementById("edit-port-desc")?.value || "";
 
             const originalOwnerId = activePostData.ownerId || activePostData.ownerUid || activePostData.uid || loggedInUserId;
             const originalOwnerName = activePostData.ownerName || loggedInUserName;
@@ -1006,18 +1007,81 @@ if (document.getElementById("form-update-portfolio")) {
     };
 }
 
-if (document.getElementById("btn-trigger-delete-post")) {
-    document.getElementById("btn-trigger-delete-post").onclick = async () => {
+// 🗑️ สร้าง และ จัดการ Custom Modal ยืนยันการลบผลงาน (แทน Native confirm)
+function getOrCreateDeleteConfirmModal() {
+    let modal = document.getElementById("modal-confirm-delete");
+    if (!modal) {
+        modal = document.createElement("div");
+        modal.id = "modal-confirm-delete";
+        modal.className = "fixed inset-0 z-[10001] bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 hidden transition-all duration-200 opacity-0";
+        modal.innerHTML = `
+            <div class="bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl border border-slate-100 text-center transform scale-95 transition-transform duration-200" id="modal-confirm-delete-box">
+                <div class="w-12 h-12 bg-rose-100 text-rose-500 rounded-full flex items-center justify-center mx-auto mb-4 text-xl">
+                    🗑️
+                </div>
+                <h3 class="font-bold text-slate-800 text-base mb-1">ยืนยันการลบผลงาน?</h3>
+                <p class="text-xs text-slate-500 mb-6 leading-relaxed">ผลงานนี้จะถูกลบออกจากระบบอย่างถาวรและไม่สามารถกู้คืนได้อีก</p>
+                <div class="flex items-center space-x-2">
+                    <button id="btn-cancel-delete" type="button" class="flex-1 py-2.5 px-4 rounded-xl border border-slate-200 text-xs font-semibold text-slate-600 hover:bg-slate-50 transition-colors">
+                        ยกเลิก
+                    </button>
+                    <button id="btn-confirm-delete" type="button" class="flex-1 py-2.5 px-4 rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-xs font-bold shadow-md shadow-rose-500/20 transition-all">
+                        ลบผลงาน
+                    </button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+
+        const closeDeleteModal = () => {
+            modal.classList.add("opacity-0");
+            modal.querySelector("#modal-confirm-delete-box")?.classList.add("scale-95");
+            setTimeout(() => {
+                modal.classList.add("hidden");
+            }, 200);
+        };
+
+        modal.querySelector("#btn-cancel-delete").onclick = closeDeleteModal;
+        modal.onclick = (e) => { if (e.target === modal) closeDeleteModal(); };
+    }
+    return modal;
+}
+
+// 🎯 Event Handler สำหรับปุ่มลบผลงาน
+const btnTriggerDeletePost = document.getElementById("btn-trigger-delete-post");
+if (btnTriggerDeletePost) {
+    btnTriggerDeletePost.onclick = () => {
         if (!activePostId) return;
-        if (confirm("คุณแน่ใจหรือไม่ว่าต้องการลบผลงานชิ้นนี้อย่างถาวร?")) {
+
+        const deleteModal = getOrCreateDeleteConfirmModal();
+        const box = deleteModal.querySelector("#modal-confirm-delete-box");
+        
+        deleteModal.classList.remove("hidden");
+        setTimeout(() => {
+            deleteModal.classList.remove("opacity-0");
+            box?.classList.remove("scale-95");
+        }, 10);
+
+        const btnConfirm = deleteModal.querySelector("#btn-confirm-delete");
+        btnConfirm.onclick = async () => {
+            deleteModal.classList.add("opacity-0");
+            box?.classList.add("scale-95");
+            setTimeout(() => deleteModal.classList.add("hidden"), 200);
+
             try {
-                await deleteDoc(doc(db, "portfolios", activePostId));
-                toast("🗑️ ลบผลงานเรียบร้อยแล้ว", "success");
+                const targetPostId = activePostId;
+                await deleteDoc(doc(db, "portfolios", targetPostId));
+                
+                activePostId = null;
+                activePostData = null;
                 closePortfolioModal();
+                
+                toast("🗑️ ลบผลงานเรียบร้อยแล้ว", "success");
             } catch (err) { 
-                toast("ไม่สามารถลบผลงานได้", "error"); 
+                console.error("Delete Error:", err);
+                toast("ไม่สามารถลบผลงานได้ หรือสิทธิ์ไม่ถูกต้อง", "error"); 
             }
-        }
+        };
     };
 }
 
@@ -1100,6 +1164,7 @@ function setupProfileTabs() {
     });
 }
 
+// Initial Listener Setup
 if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", () => {
         setupProfileTabs();
