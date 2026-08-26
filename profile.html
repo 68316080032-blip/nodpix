@@ -113,14 +113,26 @@
         </div>
     </header>
 
- <!-- Header Cover Banner Zone -->
-    <div class="relative w-full h-48 sm:h-64 bg-zinc-800 border-b border-zinc-200 overflow-hidden">
-        <img id="profile-banner-img" 
-     src="./img/banner.jpg" 
-     onerror="this.onerror=null; this.src='img/banner.jpg';"
-     alt="Website Banner" 
-     class="w-full h-full object-cover">
-        <div class="absolute inset-0 bg-black/20"></div>
+<!-- Header Cover Banner Zone (โทนสีส้มเล่นแสงมิติ Glow) -->
+    <div class="relative w-full h-48 sm:h-64 bg-slate-950 border-b border-white/10 overflow-hidden">
+        
+        <!-- 🎨 Base Background Gradient สีส้มหลัก -->
+        <div class="absolute inset-0 bg-gradient-to-r from-orange-600 via-amber-500 to-orange-500 opacity-95"></div>
+
+        <!-- 💡 Glow Effect 1: แสงวงกลมเรืองรองซ้ายบน -->
+        <div class="absolute -top-24 -left-20 w-96 h-96 bg-yellow-300/40 rounded-full blur-3xl pointer-events-none"></div>
+
+        <!-- 💡 Glow Effect 2: แสงไฟสปอตไลท์ตรงกลาง -->
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-orange-300/30 rounded-full blur-3xl pointer-events-none"></div>
+
+        <!-- 💡 Glow Effect 3: แสงนีออนโทนแดงส้มขวาอุ่นๆ -->
+        <div class="absolute -bottom-20 -right-20 w-96 h-96 bg-rose-500/40 rounded-full blur-3xl pointer-events-none"></div>
+
+        <!-- 📐 Cyber Grid Texture: ลายจุดตารางบางๆ เพิ่มมิติแบบพรีเมียม -->
+        <div class="absolute inset-0 bg-[radial-gradient(rgba(255,255,255,0.2)_1px,transparent_1px)] [background-size:18px_18px] opacity-40 mix-blend-overlay"></div>
+
+        <!-- 🌓 Shadow Layer: ดรอปเงาบางๆ ด้านล่างให้รอยต่อ Avatar สมูทขึ้น -->
+        <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/20"></div>
     </div>
 
     <!-- Main Container -->
