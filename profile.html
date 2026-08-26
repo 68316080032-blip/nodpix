@@ -86,11 +86,11 @@
                                     </a>
                                 </li>
                                 <li>
-                                        <a href="jobs.html" class="flex items-center gap-2 text-orange-600 font-bold hover:underline">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                                            Jobs
-                                        </a>
-                                    </li>
+                                    <a href="jobs.html" class="flex items-center gap-2 text-orange-600 font-bold hover:underline">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                                        Jobs
+                                    </a>
+                                </li>
                                 <li><a href="profile.html" class="block hover:text-orange-600">Profile</a></li>
                                 <li><a href="#" class="block hover:text-orange-600">Settings</a></li>
                             </ul>
@@ -113,25 +113,13 @@
         </div>
     </header>
 
-<!-- Header Cover Banner Zone (โทนสีส้มเล่นแสงมิติ Glow) -->
+    <!-- Header Cover Banner Zone -->
     <div class="relative w-full h-48 sm:h-64 bg-slate-950 border-b border-white/10 overflow-hidden">
-        
-        <!-- 🎨 Base Background Gradient สีส้มหลัก -->
         <div class="absolute inset-0 bg-gradient-to-r from-orange-600 via-amber-500 to-orange-500 opacity-95"></div>
-
-        <!-- 💡 Glow Effect 1: แสงวงกลมเรืองรองซ้ายบน -->
         <div class="absolute -top-24 -left-20 w-96 h-96 bg-yellow-300/40 rounded-full blur-3xl pointer-events-none"></div>
-
-        <!-- 💡 Glow Effect 2: แสงไฟสปอตไลท์ตรงกลาง -->
         <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-orange-300/30 rounded-full blur-3xl pointer-events-none"></div>
-
-        <!-- 💡 Glow Effect 3: แสงนีออนโทนแดงส้มขวาอุ่นๆ -->
         <div class="absolute -bottom-20 -right-20 w-96 h-96 bg-rose-500/40 rounded-full blur-3xl pointer-events-none"></div>
-
-        <!-- 📐 Cyber Grid Texture: ลายจุดตารางบางๆ เพิ่มมิติแบบพรีเมียม -->
         <div class="absolute inset-0 bg-[radial-gradient(rgba(255,255,255,0.2)_1px,transparent_1px)] [background-size:18px_18px] opacity-40 mix-blend-overlay"></div>
-
-        <!-- 🌓 Shadow Layer: ดรอปเงาบางๆ ด้านล่างให้รอยต่อ Avatar สมูทขึ้น -->
         <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/20"></div>
     </div>
 
@@ -152,7 +140,7 @@
                 <div class="mt-4 text-center lg:text-left w-full space-y-3">
                     <h1 id="user-display-name" class="text-2xl font-extrabold text-black tracking-tight">กำลังโหลด...</h1>
                     
-                    <!-- 🎯 ตำแหน่งงาน + Badge จุดประสงค์ (Freelance/Employer) -->
+                    <!-- 🎯 ตำแหน่งงาน + Badge จุดประสงค์ -->
                     <div class="flex flex-wrap items-center justify-center lg:justify-start gap-2">
                         <span id="user-role" class="text-xs font-bold text-orange-600 uppercase tracking-wider">
                             DIGITAL CREATOR
@@ -176,9 +164,8 @@
 
                     <p id="user-bio" class="text-xs text-zinc-600 leading-relaxed pt-1">ยังไม่มีคำอธิบายโปรไฟล์</p>
 
-                    <!-- 🌐 Social & Contact Links Zone (รวม LINE ID) -->
+                    <!-- 🌐 Social & Contact Links Zone -->
                     <div id="user-social-links" class="flex flex-wrap items-center justify-center lg:justify-start gap-2 pt-2">
-                        <!-- ปุ่ม LINE ID Pill Button -->
                         <a id="link-line" href="#" target="_blank" class="hidden inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-50 hover:bg-emerald-100 text-emerald-600 text-xs font-bold transition-all border border-emerald-200">
                             <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M24 10.304c0-5.369-5.383-9.738-12-9.738-6.616 0-12 4.369-12 9.738 0 4.814 4.269 8.846 10.036 9.608.391.084.922.258 1.057.592.121.303.079.778.039 1.085l-.171 1.027c-.053.303-.242 1.186 1.039.647 1.281-.54 6.911-4.069 9.428-6.967 1.739-1.907 2.572-3.844 2.572-6.002z"/></svg>
                             <span id="label-line">LINE ID</span>
@@ -218,7 +205,7 @@
                     </div>
                 </div>
 
-                <!-- 📌 แถบ Navigation Tabs (เหลือเฉพาะ Work และ Your Stats) -->
+                <!-- 📌 แถบ Navigation Tabs -->
                 <div class="border-b border-zinc-200 mb-6">
                     <div class="flex items-center space-x-8 text-sm font-bold overflow-x-auto">
                         <button type="button" class="profile-tab text-black border-b-2 border-black pb-3 font-bold transition-all whitespace-nowrap cursor-pointer" data-tab="tab-work">
@@ -265,8 +252,6 @@
             <h3 class="text-lg font-bold text-black border-b border-zinc-100 pb-3">Edit Profile & Links</h3>
             
             <form id="form-edit-profile" class="space-y-4 text-left">
-                
-                <!-- 🎯 จุดประสงค์การใช้งาน (กดติ๊กเลือก) -->
                 <div>
                     <label class="text-[11px] font-bold text-zinc-500 uppercase tracking-wider block mb-2">จุดประสงค์การใช้งาน (Account Purpose)</label>
                     <div class="grid grid-cols-2 gap-2">
@@ -288,18 +273,14 @@
                     </div>
                 </div>
 
-                <!-- 💬 ABOUT YOU (BIO) -->
                 <div>
                     <label class="text-[11px] font-bold text-zinc-500 uppercase tracking-wider">About You (Bio)</label>
                     <textarea id="edit-bio" rows="3" class="w-full bg-zinc-50 text-xs px-4 py-2.5 rounded-xl border border-zinc-200 mt-1 focus:outline-none focus:border-orange-500 focus:bg-white transition-all" placeholder="เขียนอธิบายเกี่ยวกับตัวคุณ..."></textarea>
                 </div>
 
-                <!-- 🌐 SOCIAL & CONTACT LINKS -->
                 <div class="pt-2 border-t border-zinc-100 space-y-3">
                     <label class="text-[11px] font-bold text-zinc-500 uppercase tracking-wider block">Contact & Social Links</label>
                     <div class="space-y-2">
-                        
-                        <!-- 💚 LINE ID -->
                         <div>
                             <label class="text-[10px] text-emerald-600 font-semibold mb-1 flex items-center gap-1">
                                 <span>💬 LINE ID</span>
